@@ -56,6 +56,9 @@ void plf::nanosecond_delay(double x): delay the program until x nanoseconds have
 
 
 
+Timer 'pausing':
+================
+
 I determined that a 'pause'-style function would add too much complexity to the class for simple benchmarking, which in turn might interfere with performance analysis, so if you need a 'pause' function do something like this:
 
 	plf::nanotimer timer;
