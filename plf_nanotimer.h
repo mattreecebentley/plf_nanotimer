@@ -26,22 +26,22 @@
 #if defined(_MSC_VER)
 	#if _MSC_VER >= 1900
 		#define PLF_NANOTIMER_NOEXCEPT noexcept
+	#else
+		#define PLF_NANOTIMER_NOEXCEPT throw()
 	#endif
 #elif defined(__cplusplus) && __cplusplus >= 201103L // C++11 support, at least
 	#if defined(__GNUC__) && defined(__GNUC_MINOR__) && !defined(__clang__) // If compiler is GCC/G++
-		#if __GNUC__ < 6
+		#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4
 			#define PLF_NANOTIMER_NOEXCEPT noexcept
 		#else
 			#define PLF_NANOTIMER_NOEXCEPT throw()
 		#endif
-	#elif defined(__GLIBCXX__) // Using another compiler type with libstdc++ - we are assuming full c++11 compliance for compiler - which may not be true
-		#if __GLIBCXX__ >= 20160111
+	#elif defined(__clang__)
+		#if __has_feature(cxx_noexcept)
 			#define PLF_NANOTIMER_NOEXCEPT noexcept
 		#else
 			#define PLF_NANOTIMER_NOEXCEPT throw()
 		#endif
-	#elif (defined(_LIBCPP_CXX03_LANG) || defined(_LIBCPP_HAS_NO_RVALUE_REFERENCES) || defined(_LIBCPP_HAS_NO_VARIADICS)) // Special case for checking C++11 support with libCPP
-		#define PLF_NANOTIMER_NOEXCEPT throw()
 	#else // Assume type traits and initializer support for other compilers and standard libraries
 		#define PLF_NANOTIMER_NOEXCEPT noexcept
 	#endif
@@ -92,7 +92,7 @@
 			return static_cast<double>(get_elapsed_ns()) / 1000.0;
 		}
 
-		inline double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -116,12 +116,12 @@
 		struct timespec time1, time2;
 	public:
 		nanotimer() PLF_NANOTIMER_NOEXCEPT {}
-		
+
 		inline void start() PLF_NANOTIMER_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time1);
 		}
-		
+
 		inline double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000000.0;
@@ -132,7 +132,7 @@
 			return get_elapsed_ns() / 1000.0;
 		}
 
-		inline double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -147,9 +147,9 @@
 	#if defined(_MSC_VER) && !defined(NOMINMAX)
 		#define NOMINMAX // Otherwise MS compilers act like idiots when using std::numeric_limits<>::max() and including windows.h
 	#endif
-	
+
 	#include <windows.h>
-	
+
 	namespace plf
 	{
 
@@ -171,7 +171,7 @@
 			QueryPerformanceCounter(&ticks1);
 		}
 
-		inline double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks2);
 			return (static_cast<double>(ticks2.QuadPart - ticks1.QuadPart) * 1000.0) / frequency;
@@ -203,13 +203,13 @@ void nanosecond_delay(const double delay_ns)
 }
 
 
-inline void microsecond_delay(double delay_us)
+inline void microsecond_delay(const double delay_us)
 {
 	nanosecond_delay(delay_us * 1000.0);
 }
 
 
-inline void millisecond_delay(double delay_ms)
+inline void millisecond_delay(const double delay_ms)
 {
 	nanosecond_delay(delay_ms * 1000000.0);
 }
@@ -217,5 +217,7 @@ inline void millisecond_delay(double delay_ms)
 
 } // namespace
 #endif
+
+#undef PLF_NANOTIMER_NOEXCEPT
 
 #endif // PLF_NANOTIMER
