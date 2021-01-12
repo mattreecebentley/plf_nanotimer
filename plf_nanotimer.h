@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
+// Copyright (c) 2021, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
 
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -17,36 +17,36 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 
-#ifndef PLF_NANOTIMER
-#define PLF_NANOTIMER
+#ifndef PLF_NANOTIMER_H
+#define PLF_NANOTIMER_H
 
 
 // Compiler-specific defines:
 
 #if defined(_MSC_VER)
 	#if _MSC_VER >= 1900
-		#define PLF_NANOTIMER_NOEXCEPT noexcept
+		#define PLF_NOEXCEPT noexcept
 	#else
-		#define PLF_NANOTIMER_NOEXCEPT throw()
+		#define PLF_NOEXCEPT throw()
 	#endif
 #elif defined(__cplusplus) && __cplusplus >= 201103L // C++11 support, at least
 	#if defined(__GNUC__) && defined(__GNUC_MINOR__) && !defined(__clang__) // If compiler is GCC/G++
 		#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4
-			#define PLF_NANOTIMER_NOEXCEPT noexcept
+			#define PLF_NOEXCEPT noexcept
 		#else
-			#define PLF_NANOTIMER_NOEXCEPT throw()
+			#define PLF_NOEXCEPT throw()
 		#endif
 	#elif defined(__clang__)
 		#if __has_feature(cxx_noexcept)
-			#define PLF_NANOTIMER_NOEXCEPT noexcept
+			#define PLF_NOEXCEPT noexcept
 		#else
-			#define PLF_NANOTIMER_NOEXCEPT throw()
+			#define PLF_NOEXCEPT throw()
 		#endif
 	#else // Assume type traits and initializer support for other compilers and standard libraries
-		#define PLF_NANOTIMER_NOEXCEPT noexcept
+		#define PLF_NOEXCEPT noexcept
 	#endif
 #else
-	#define PLF_NANOTIMER_NOEXCEPT throw()
+	#define PLF_NOEXCEPT throw()
 #endif
 
 
@@ -77,22 +77,22 @@
 			mach_port_deallocate(mach_task_self(), system_clock);
 		}
 
-		inline void start() PLF_NANOTIMER_NOEXCEPT
+		inline void start() PLF_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time1);
 		}
 
-		inline double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_ms() PLF_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000000.0;
 		}
 
-		inline double get_elapsed_us() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000.0;
 		}
 
-		double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ns() PLF_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -115,24 +115,24 @@
 	private:
 		struct timespec time1, time2;
 	public:
-		nanotimer() PLF_NANOTIMER_NOEXCEPT {}
+		nanotimer() PLF_NOEXCEPT {}
 
-		inline void start() PLF_NANOTIMER_NOEXCEPT
+		inline void start() PLF_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time1);
 		}
 
-		inline double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_ms() PLF_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000000.0;
 		}
 
-		inline double get_elapsed_us() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000.0;
 		}
 
-		double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ns() PLF_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -159,30 +159,30 @@
 		LARGE_INTEGER ticks1, ticks2;
 		double frequency;
 	public:
-		nanotimer() PLF_NANOTIMER_NOEXCEPT
+		nanotimer() PLF_NOEXCEPT
 		{
 			LARGE_INTEGER freq;
 			QueryPerformanceFrequency(&freq);
 			frequency = static_cast<double>(freq.QuadPart);
 		}
 
-		inline void start() PLF_NANOTIMER_NOEXCEPT
+		inline void start() PLF_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks1);
 		}
 
-		double get_elapsed_ms() PLF_NANOTIMER_NOEXCEPT
+		double get_elapsed_ms() PLF_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks2);
 			return (static_cast<double>(ticks2.QuadPart - ticks1.QuadPart) * 1000.0) / frequency;
 		}
 
-		inline double get_elapsed_us() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000.0;
 		}
 
-		inline double get_elapsed_ns() PLF_NANOTIMER_NOEXCEPT
+		inline double get_elapsed_ns() PLF_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000000.0;
 		}
@@ -218,6 +218,4 @@ inline void millisecond_delay(const double delay_ms)
 } // namespace
 #endif
 
-#undef PLF_NANOTIMER_NOEXCEPT
-
-#endif // PLF_NANOTIMER
+#endif // PLF_NANOTIMER_H
