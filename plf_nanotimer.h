@@ -37,12 +37,16 @@
 			#define PLF_NOEXCEPT throw()
 		#endif
 	#elif defined(__clang__)
-		#if __has_feature(cxx_noexcept)
-			#define PLF_NOEXCEPT noexcept
+		#if __clang_major__ >= 3 // clang versions < 3 don't support __has_feature()
+			#if __has_feature(cxx_noexcept)
+				#define PLF_NOEXCEPT noexcept
+			#else
+				#define PLF_NOEXCEPT throw()
+			#endif
 		#else
 			#define PLF_NOEXCEPT throw()
 		#endif
-	#else // Assume type traits and initializer support for other compilers and standard libraries
+	#else // Assume support for other compilers and standard library implementations
 		#define PLF_NOEXCEPT noexcept
 	#endif
 #else
