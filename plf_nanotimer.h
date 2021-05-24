@@ -23,7 +23,7 @@
 
 // Compiler-specific defines:
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
 	#if _MSC_VER >= 1900
 		#define PLF_NOEXCEPT noexcept
 	#else
@@ -37,16 +37,12 @@
 			#define PLF_NOEXCEPT throw()
 		#endif
 	#elif defined(__clang__)
-		#if __clang_major__ >= 3 // clang versions < 3 don't support __has_feature()
-			#if __has_feature(cxx_noexcept)
-				#define PLF_NOEXCEPT noexcept
-			#else
-				#define PLF_NOEXCEPT throw()
-			#endif
+		#if __has_feature(cxx_noexcept)
+			#define PLF_NOEXCEPT noexcept
 		#else
 			#define PLF_NOEXCEPT throw()
 		#endif
-	#else // Assume support for other compilers and standard library implementations
+	#else // Assume type traits and initializer support for other compilers and standard libraries
 		#define PLF_NOEXCEPT noexcept
 	#endif
 #else
@@ -148,7 +144,7 @@
 
 // Windows implementation:
 #elif defined(_WIN32)
-	#if defined(_MSC_VER) && !defined(NOMINMAX)
+	#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__) && !defined(NOMINMAX)
 		#define NOMINMAX // Otherwise MS compilers act like idiots when using std::numeric_limits<>::max() and including windows.h
 	#endif
 
