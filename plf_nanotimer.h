@@ -193,7 +193,7 @@
 
 
 #if defined(__MACH__) || (defined(linux) || defined(__linux__) || defined(__linux)) || (defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) || defined(_WIN32)
-void nanosecond_delay(const double delay_ns)
+inline void nanosecond_delay(const double delay_ns)
 {
 	nanotimer timer;
 	timer.start();
