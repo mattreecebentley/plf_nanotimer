@@ -148,7 +148,14 @@
 		#define NOMINMAX // Otherwise MS compilers act like idiots when using std::numeric_limits<>::max() and including windows.h
 	#endif
 
+	#pragma push_macro("WIN32_LEAN_AND_MEAN")
+	#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
+	#endif
+
 	#include <windows.h>
+
+	#pragma pop_macro("WIN32_LEAN_AND_MEAN")
 
 	namespace plf
 	{
