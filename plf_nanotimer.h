@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
+// Copyright (c) 2022, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
 
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -23,30 +23,28 @@
 
 // Compiler-specific defines:
 
+#define PLF_NOEXCEPT throw() // default before potential redefine
+
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
 	#if _MSC_VER >= 1900
+		#undef PLF_NOEXCEPT
 		#define PLF_NOEXCEPT noexcept
-	#else
-		#define PLF_NOEXCEPT throw()
 	#endif
 #elif defined(__cplusplus) && __cplusplus >= 201103L // C++11 support, at least
 	#if defined(__GNUC__) && defined(__GNUC_MINOR__) && !defined(__clang__) // If compiler is GCC/G++
 		#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4
+			#undef PLF_NOEXCEPT
 			#define PLF_NOEXCEPT noexcept
-		#else
-			#define PLF_NOEXCEPT throw()
 		#endif
 	#elif defined(__clang__)
 		#if __has_feature(cxx_noexcept)
+			#undef PLF_NOEXCEPT
 			#define PLF_NOEXCEPT noexcept
-		#else
-			#define PLF_NOEXCEPT throw()
 		#endif
 	#else // Assume type traits and initializer support for other compilers and standard libraries
+		#undef PLF_NOEXCEPT
 		#define PLF_NOEXCEPT noexcept
 	#endif
-#else
-	#define PLF_NOEXCEPT throw()
 #endif
 
 
@@ -77,17 +75,17 @@
 			mach_port_deallocate(mach_task_self(), system_clock);
 		}
 
-		inline void start() PLF_NOEXCEPT
+		void start() PLF_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time1);
 		}
 
-		inline double get_elapsed_ms() PLF_NOEXCEPT
+		double get_elapsed_ms() PLF_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000000.0;
 		}
 
-		inline double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000.0;
 		}
@@ -117,17 +115,17 @@
 	public:
 		nanotimer() PLF_NOEXCEPT {}
 
-		inline void start() PLF_NOEXCEPT
+		void start() PLF_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time1);
 		}
 
-		inline double get_elapsed_ms() PLF_NOEXCEPT
+		double get_elapsed_ms() PLF_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000000.0;
 		}
 
-		inline double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000.0;
 		}
@@ -148,7 +146,13 @@
 		#define NOMINMAX // Otherwise MS compilers act like idiots when using std::numeric_limits<>::max() and including windows.h
 	#endif
 
-	#include <windows.h>
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+		#include <windows.h>
+		#undef WIN32_LEAN_AND_MEAN
+	#else
+		#include <windows.h>
+	#endif
 
 	namespace plf
 	{
@@ -166,7 +170,7 @@
 			frequency = static_cast<double>(freq.QuadPart);
 		}
 
-		inline void start() PLF_NOEXCEPT
+		void start() PLF_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks1);
 		}
@@ -177,12 +181,12 @@
 			return (static_cast<double>(ticks2.QuadPart - ticks1.QuadPart) * 1000.0) / frequency;
 		}
 
-		inline double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000.0;
 		}
 
-		inline double get_elapsed_ns() PLF_NOEXCEPT
+		double get_elapsed_ns() PLF_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000000.0;
 		}
@@ -193,7 +197,7 @@
 
 
 #if defined(__MACH__) || (defined(linux) || defined(__linux__) || defined(__linux)) || (defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) || defined(_WIN32)
-void nanosecond_delay(const double delay_ns)
+inline void nanosecond_delay(const double delay_ns)
 {
 	nanotimer timer;
 	timer.start();
@@ -217,5 +221,7 @@ inline void millisecond_delay(const double delay_ms)
 
 } // namespace
 #endif
+
+#undef PLF_NOEXCEPT
 
 #endif // PLF_NANOTIMER_H
