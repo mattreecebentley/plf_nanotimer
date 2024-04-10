@@ -65,12 +65,12 @@
 		clock_serv_t system_clock;
 		mach_timespec_t time1, time2;
 	public:
-		nanotimer()
+		nanotimer() PLF_NOEXCEPT
 		{
 			host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &system_clock);
 		}
 
-		~nanotimer()
+		~nanotimer() PLF_NOEXCEPT
 		{
 			mach_port_deallocate(mach_task_self(), system_clock);
 		}
@@ -197,7 +197,7 @@
 
 
 #if defined(__MACH__) || (defined(linux) || defined(__linux__) || defined(__linux)) || (defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) || defined(_WIN32)
-inline void nanosecond_delay(const double delay_ns)
+inline void nanosecond_delay(const double delay_ns) PLF_NOEXCEPT
 {
 	nanotimer timer;
 	timer.start();
@@ -207,13 +207,13 @@ inline void nanosecond_delay(const double delay_ns)
 }
 
 
-inline void microsecond_delay(const double delay_us)
+inline void microsecond_delay(const double delay_us) PLF_NOEXCEPT
 {
 	nanosecond_delay(delay_us * 1000.0);
 }
 
 
-inline void millisecond_delay(const double delay_ms)
+inline void millisecond_delay(const double delay_ms) PLF_NOEXCEPT
 {
 	nanosecond_delay(delay_ms * 1000000.0);
 }
