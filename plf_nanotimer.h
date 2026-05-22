@@ -26,6 +26,10 @@
 #define PLF_NOEXCEPT throw() // default before potential redefine
 
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
+	// Suppress useless MSVC warnings:
+	#pragma warning ( push )
+	#pragma warning ( disable : 26495 )
+
 	#if _MSC_VER >= 1900
 		#undef PLF_NOEXCEPT
 		#define PLF_NOEXCEPT noexcept
@@ -220,6 +224,11 @@ inline void millisecond_delay(const double delay_ms) PLF_NOEXCEPT
 
 
 } // namespace
+#endif
+
+
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
+	#pragma warning ( pop )
 #endif
 
 #undef PLF_NOEXCEPT
