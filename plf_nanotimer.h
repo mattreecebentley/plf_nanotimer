@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
+// Copyright (c) 2026, Matthew Bentley (mattreecebentley@gmail.com) www.plflib.org
 
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -9,11 +9,11 @@
 // freely, subject to the following restrictions:
 //
 // 1. The origin of this software must not be misrepresented; you must not
-//    claim that you wrote the original software. If you use this software
-//    in a product, an acknowledgement in the product documentation would be
-//    appreciated but is not required.
+// 	claim that you wrote the original software. If you use this software
+// 	in a product, an acknowledgement in the product documentation would be
+// 	appreciated but is not required.
 // 2. Altered source versions must be plainly marked as such, and must not be
-//    misrepresented as being the original software.
+// 	misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
 
@@ -23,7 +23,7 @@
 
 // Compiler-specific defines:
 
-#define PLF_NOEXCEPT throw() // default before potential redefine
+#define PLF_NANO_NOEXCEPT throw() // default before potential redefine
 
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
 	// Suppress useless MSVC warnings:
@@ -31,23 +31,23 @@
 	#pragma warning ( disable : 26495 )
 
 	#if _MSC_VER >= 1900
-		#undef PLF_NOEXCEPT
-		#define PLF_NOEXCEPT noexcept
+		#undef PLF_NANO_NOEXCEPT
+		#define PLF_NANO_NOEXCEPT noexcept
 	#endif
 #elif defined(__cplusplus) && __cplusplus >= 201103L // C++11 support, at least
 	#if defined(__GNUC__) && defined(__GNUC_MINOR__) && !defined(__clang__) // If compiler is GCC/G++
 		#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4
-			#undef PLF_NOEXCEPT
-			#define PLF_NOEXCEPT noexcept
+			#undef PLF_NANO_NOEXCEPT
+			#define PLF_NANO_NOEXCEPT noexcept
 		#endif
-	#elif defined(__clang__)
+	#elif defined(__clang__) && __clang_major__ >= 3
 		#if __has_feature(cxx_noexcept)
-			#undef PLF_NOEXCEPT
-			#define PLF_NOEXCEPT noexcept
+			#undef PLF_NANO_NOEXCEPT
+			#define PLF_NANO_NOEXCEPT noexcept
 		#endif
 	#else // Assume type traits and initializer support for other compilers and standard libraries
-		#undef PLF_NOEXCEPT
-		#define PLF_NOEXCEPT noexcept
+		#undef PLF_NANO_NOEXCEPT
+		#define PLF_NANO_NOEXCEPT noexcept
 	#endif
 #endif
 
@@ -69,32 +69,32 @@
 		clock_serv_t system_clock;
 		mach_timespec_t time1, time2;
 	public:
-		nanotimer() PLF_NOEXCEPT
+		nanotimer() PLF_NANO_NOEXCEPT
 		{
 			host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &system_clock);
 		}
 
-		~nanotimer() PLF_NOEXCEPT
+		~nanotimer() PLF_NANO_NOEXCEPT
 		{
 			mach_port_deallocate(mach_task_self(), system_clock);
 		}
 
-		void start() PLF_NOEXCEPT
+		void start() PLF_NANO_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time1);
 		}
 
-		double get_elapsed_ms() PLF_NOEXCEPT
+		double get_elapsed_ms() PLF_NANO_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000000.0;
 		}
 
-		double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NANO_NOEXCEPT
 		{
 			return static_cast<double>(get_elapsed_ns()) / 1000.0;
 		}
 
-		double get_elapsed_ns() PLF_NOEXCEPT
+		double get_elapsed_ns() PLF_NANO_NOEXCEPT
 		{
 			clock_get_time(system_clock, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -117,24 +117,24 @@
 	private:
 		struct timespec time1, time2;
 	public:
-		nanotimer() PLF_NOEXCEPT {}
+		nanotimer() PLF_NANO_NOEXCEPT {}
 
-		void start() PLF_NOEXCEPT
+		void start() PLF_NANO_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time1);
 		}
 
-		double get_elapsed_ms() PLF_NOEXCEPT
+		double get_elapsed_ms() PLF_NANO_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000000.0;
 		}
 
-		double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NANO_NOEXCEPT
 		{
 			return get_elapsed_ns() / 1000.0;
 		}
 
-		double get_elapsed_ns() PLF_NOEXCEPT
+		double get_elapsed_ns() PLF_NANO_NOEXCEPT
 		{
 			clock_gettime(CLOCK_MONOTONIC, &time2);
 			return ((1000000000.0 * static_cast<double>(time2.tv_sec - time1.tv_sec)) + static_cast<double>(time2.tv_nsec - time1.tv_nsec));
@@ -167,30 +167,30 @@
 		LARGE_INTEGER ticks1, ticks2;
 		double frequency;
 	public:
-		nanotimer() PLF_NOEXCEPT
+		nanotimer() PLF_NANO_NOEXCEPT
 		{
 			LARGE_INTEGER freq;
 			QueryPerformanceFrequency(&freq);
 			frequency = static_cast<double>(freq.QuadPart);
 		}
 
-		void start() PLF_NOEXCEPT
+		void start() PLF_NANO_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks1);
 		}
 
-		double get_elapsed_ms() PLF_NOEXCEPT
+		double get_elapsed_ms() PLF_NANO_NOEXCEPT
 		{
 			QueryPerformanceCounter(&ticks2);
 			return (static_cast<double>(ticks2.QuadPart - ticks1.QuadPart) * 1000.0) / frequency;
 		}
 
-		double get_elapsed_us() PLF_NOEXCEPT
+		double get_elapsed_us() PLF_NANO_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000.0;
 		}
 
-		double get_elapsed_ns() PLF_NOEXCEPT
+		double get_elapsed_ns() PLF_NANO_NOEXCEPT
 		{
 			return get_elapsed_ms() * 1000000.0;
 		}
@@ -201,7 +201,7 @@
 
 
 #if defined(__MACH__) || (defined(linux) || defined(__linux__) || defined(__linux)) || (defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) || defined(_WIN32)
-inline void nanosecond_delay(const double delay_ns) PLF_NOEXCEPT
+inline void nanosecond_delay(const double delay_ns) PLF_NANO_NOEXCEPT
 {
 	nanotimer timer;
 	timer.start();
@@ -211,13 +211,13 @@ inline void nanosecond_delay(const double delay_ns) PLF_NOEXCEPT
 }
 
 
-inline void microsecond_delay(const double delay_us) PLF_NOEXCEPT
+inline void microsecond_delay(const double delay_us) PLF_NANO_NOEXCEPT
 {
 	nanosecond_delay(delay_us * 1000.0);
 }
 
 
-inline void millisecond_delay(const double delay_ms) PLF_NOEXCEPT
+inline void millisecond_delay(const double delay_ms) PLF_NANO_NOEXCEPT
 {
 	nanosecond_delay(delay_ms * 1000000.0);
 }
@@ -231,6 +231,6 @@ inline void millisecond_delay(const double delay_ms) PLF_NOEXCEPT
 	#pragma warning ( pop )
 #endif
 
-#undef PLF_NOEXCEPT
+#undef PLF_NANO_NOEXCEPT
 
 #endif // PLF_NANOTIMER_H
